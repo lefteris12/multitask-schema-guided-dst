@@ -1,0 +1,12 @@
+absl-py>=0.7.0
+fuzzywuzzy>=0.17.0
+numpy>=1.16.1
+six>=1.12.0
+tensorflow>=2.6.3
+transformers==4.18.0
+torch
+tqdm
+scikit-learn
+matplotlib
+nltk
+
