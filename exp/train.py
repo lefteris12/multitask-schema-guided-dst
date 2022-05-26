@@ -168,21 +168,21 @@ if __name__ == '__main__':
     criterion_req_status = nn.CrossEntropyLoss(ignore_index=-1)
 
     def get_loss(y_pred, y_true):
-        loss_intent_status = criterion_intent_status(y_pred['intent_status'], y_true['intent_status'])
-        loss_intent_values = criterion_intent_values(y_pred['intent_values'].reshape(-1, 2), y_true['intent_values'].reshape(-1))
+        loss_intent_status = criterion_intent_status(y_pred['intent_status'], y_true['intent_status']).nan_to_num()
+        loss_intent_values = criterion_intent_values(y_pred['intent_values'].reshape(-1, 2), y_true['intent_values'].reshape(-1)).nan_to_num()
 
-        loss_usr_status = criterion_usr_status(y_pred['usr_status'].reshape(-1, 3), y_true['usr_status'].reshape(-1))
-        loss_copy_status = criterion_copy_status(y_pred['copy_status'].reshape(-1, 4), y_true['copy_status'].reshape(-1))
-        loss_req_status = criterion_req_status(y_pred['req_status'].reshape(-1, 2), y_true['req_status'].reshape(-1))
+        loss_usr_status = criterion_usr_status(y_pred['usr_status'].reshape(-1, 3), y_true['usr_status'].reshape(-1)).nan_to_num()
+        loss_copy_status = criterion_copy_status(y_pred['copy_status'].reshape(-1, 4), y_true['copy_status'].reshape(-1)).nan_to_num()
+        loss_req_status = criterion_req_status(y_pred['req_status'].reshape(-1, 2), y_true['req_status'].reshape(-1)).nan_to_num()
 
-        loss_values = criterion_values(y_pred['values'].reshape(-1, 2), y_true['values'].reshape(-1))
+        loss_values = criterion_values(y_pred['values'].reshape(-1, 2), y_true['values'].reshape(-1)).nan_to_num()
         loss_cat = loss_values
 
-        loss_start = criterion_start(y_pred['start'].reshape(-1, y_pred['start'].shape[-1]), y_true['start_idx'].reshape(-1))
-        loss_end = criterion_end(y_pred['end'].reshape(-1, y_pred['end'].shape[-1]), y_true['end_idx'].reshape(-1))
+        loss_start = criterion_start(y_pred['start'].reshape(-1, y_pred['start'].shape[-1]), y_true['start_idx'].reshape(-1)).nan_to_num()
+        loss_end = criterion_end(y_pred['end'].reshape(-1, y_pred['end'].shape[-1]), y_true['end_idx'].reshape(-1)).nan_to_num()
         loss_noncat = (loss_start + loss_end) / 2
 
-        loss_cross = criterion_cross(y_pred['cross'].reshape(-1, 2), y_true['cross_copy'].reshape(-1))
+        loss_cross = criterion_cross(y_pred['cross'].reshape(-1, 2), y_true['cross_copy'].reshape(-1)).nan_to_num()
 
         loss_dst = (3 * loss_usr_status + 3 * loss_copy_status + loss_cat + loss_noncat + loss_cross) / 9
         loss_intent = (2 * loss_intent_status + loss_intent_values) / 3

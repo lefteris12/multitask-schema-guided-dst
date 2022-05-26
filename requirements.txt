@@ -4,7 +4,7 @@ numpy>=1.16.1
 six>=1.12.0
 tensorflow>=2.6.3
 transformers==4.18.0
-torch
+torch==1.11.0
 tqdm
 scikit-learn
 matplotlib
