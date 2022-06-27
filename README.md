@@ -1,3 +1,21 @@
+# Description
+
+This repo contains the source code for the INTERSPEECH 2022 paper "A Multi-Task BERT Model for Schema-Guided Dialogue State Tracking".
+
+# Abstract
+
+Task-oriented dialogue systems often employ a Dialogue State
+Tracker (DST) to successfully complete conversations. Recent
+state-of-the-art DST implementations rely on schemata of diverse services to improve model robustness and handle
+zero-shot generalization to new domains, however such methods typically require multiple large scale transformer models
+and long input sequences to perform well. We propose a single multi-task BERT-based model that jointly solves the three
+DST tasks of intent prediction, requested slot prediction and
+slot filling. Moreover, we propose an efficient and parsimonious encoding of the dialogue history and service schemata
+that is shown to further improve performance. Evaluation on
+the SGD dataset shows that our approach outperforms the baseline SGP-DST by a large margin and performs well compared
+to the state-of-the-art, while being significantly more computationally efficient. Extensive ablation studies are performed to
+examine the contributing factors to the success of our model.
+
 # Dependencies
 
 ```
@@ -14,7 +32,8 @@ git clone https://github.com/google-research-datasets/dstc8-schema-guided-dialog
 ```
 
 Create and save the datasets to pickles.
-The `eval` flag controls whether the dataset uses the ground-truth previous dialogue states:
+The `eval` flag controls whether the dataset uses the ground-truth previous dialogue states.
+For all possible flags see [all_slots_dataset.py](https://github.com/lefteris12/multitask-schema-guided-dst/blob/main/exp/all_slots_dataset.py).
 
 ```
 python -m exp.all_slots_dataset --dataset_split=train --task_name=all --schema_augment_prob=0.1 --word_dropout=0.1
