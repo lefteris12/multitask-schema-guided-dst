@@ -1,9 +1,8 @@
 import torch
 from torch import nn
 
-from exp import data_utils
-
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+from . import config
+from .data import utils
 
 
 class ClassificationHead(nn.Module):
@@ -25,30 +24,23 @@ class ClassificationHead(nn.Module):
         return logits
 
 
-class AllSlotsModel(nn.Module):
-    def __init__(self, dropout, use_binary_feats=True):
-        super(AllSlotsModel, self).__init__()
-        self.bert = data_utils.get_bert_with_tokens()
+class MultitaskModel(nn.Module):
+    def __init__(self):
+        super(MultitaskModel, self).__init__()
+        self.bert = utils.get_bert_with_tokens()
+        dropout = config.DROPOUT
         self.dropout1 = nn.Dropout(dropout)
 
-        # Categorical slots
         self.cl_value = ClassificationHead(dropout, self.bert.config.hidden_size, self.bert.config.hidden_size, 2)
-        # Non-categorical slots
         self.cl_start = ClassificationHead(dropout, 2 * self.bert.config.hidden_size, self.bert.config.hidden_size, 1)
         self.cl_end = ClassificationHead(dropout, 2 * self.bert.config.hidden_size, self.bert.config.hidden_size, 1)
-        # Cross
         self.cl_cross = ClassificationHead(dropout, 2 * self.bert.config.hidden_size, self.bert.config.hidden_size, 2)
-
         self.cl_intent_status = ClassificationHead(dropout, self.bert.config.hidden_size, 128, 2)
         self.cl_intent_value = ClassificationHead(dropout, self.bert.config.hidden_size, 128, 2)
-        if use_binary_feats:
-            self.cl_usr_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 3, data_utils.NUM_BIN_FEATS)
-            self.cl_copy_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 4, data_utils.NUM_BIN_FEATS)
-            self.cl_req_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 2, data_utils.NUM_BIN_FEATS)
-        else:
-            self.cl_usr_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 3)
-            self.cl_copy_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 4)
-            self.cl_req_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 2)
+        num_bin_feats = config.NUM_BIN_FEATS if config.USE_BIN_FEATS else 0
+        self.cl_usr_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 3, num_bin_feats)
+        self.cl_copy_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 4, num_bin_feats)
+        self.cl_req_status = ClassificationHead(dropout, self.bert.config.hidden_size, 16, 2, num_bin_feats)
 
     def forward(self, x):
         logits = {}
@@ -59,10 +51,15 @@ class AllSlotsModel(nn.Module):
         # value_embeddings: (batch_size, MAX_VALUES_PER_SERVICE, self.bert.config.hidden_size)
         y = self.bert(**x['tokenized']).last_hidden_state
         y = self.dropout1(y)
-        slot_embeddings = torch.gather(y, 1, x['slot_positions'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
-        intent_embeddings = torch.gather(y, 1, x['intent_positions'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
-        slot_embeddings_other = torch.gather(y, 1, x['slot_positions_other_service'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
-        value_embeddings = torch.gather(y, 1, x['value_positions'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
+
+        slot_embeddings = torch.gather(
+            y, 1, x['slot_positions'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
+        intent_embeddings = torch.gather(
+            y, 1, x['intent_positions'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
+        slot_embeddings_other = torch.gather(
+            y, 1, x['slot_positions_other_service'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
+        value_embeddings = torch.gather(
+            y, 1, x['value_positions'].unsqueeze(-1).repeat(1, 1, self.bert.config.hidden_size))
 
         logits['intent_status'] = self.cl_intent_status({'cls': y[:, 0, :]})
         logits['intent_values'] = self.cl_intent_value({'cls': intent_embeddings})
@@ -84,14 +81,14 @@ class AllSlotsModel(nn.Module):
         usr_uttr_mask[:, 0] = 1
         usr_uttr_mask = usr_uttr_mask.unsqueeze(1)
 
-        logits['start'] = torch.where(usr_uttr_mask == 1, logits['start'], torch.Tensor([-1e9]).to(device))
-        logits['end'] = torch.where(usr_uttr_mask == 1, logits['end'], torch.Tensor([-1e9]).to(device))
+        logits['start'] = torch.where(usr_uttr_mask == 1, logits['start'], torch.Tensor([-1e9]).to(config.DEVICE))
+        logits['end'] = torch.where(usr_uttr_mask == 1, logits['end'], torch.Tensor([-1e9]).to(config.DEVICE))
 
         # slot_embeddings: (batch_size, MAX_SLOTS, self.bert.config.hidden_size)
         # slot_embeddings_other: (batch_size, MAX_SLOTS_OTHER, self.bert.config.hidden_size)
         # slots_cross: (batch_size, MAX_SLOTS, MAX_SLOTS_OTHER, 2 * self.bert.config.hidden_size)
-        slot_embeddings_repeated2 = slot_embeddings.unsqueeze(2).repeat(1, 1, data_utils.MAX_SLOTS_OTHER_SERVICE, 1)
-        slot_embeddings_other_repeated2 = slot_embeddings_other.unsqueeze(1).repeat(1, data_utils.MAX_SLOTS, 1, 1)
+        slot_embeddings_repeated2 = slot_embeddings.unsqueeze(2).repeat(1, 1, config.MAX_SLOTS_OTHER_SERVICE, 1)
+        slot_embeddings_other_repeated2 = slot_embeddings_other.unsqueeze(1).repeat(1, config.MAX_SLOTS, 1, 1)
         slots_cross = torch.cat([slot_embeddings_repeated2, slot_embeddings_other_repeated2], dim=-1)
         logits['cross'] = self.cl_cross({'cls': slots_cross})
 

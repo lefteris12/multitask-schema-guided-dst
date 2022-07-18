@@ -1,0 +1,28 @@
+import torch
+
+
+MODEL_NAME = 'bert-base-uncased'
+DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+TASK_NAME = 'all'
+MAX_SEQ_LEN = 512
+USE_SERVICE_HISTORY = True
+USE_DIALOGUE_HISTORY = True
+USE_FULL_SLOT_DESCRIPTIONS = False
+WORD_DROPOUT = 0.1
+SCHEMA_AUGMENT_PROB = 0.1
+USE_NATURAL_SYS_UTTR = False
+
+BATCH_SIZE = 16
+LEARNING_RATE = 2e-5
+LR_SCHEDULER = 'constant'
+DROPOUT = 0.3
+USE_BIN_FEATS = 1
+
+DATASET_PATH = 'dstc8-schema-guided-dialogue'
+
+MAX_INTENTS = 5
+MAX_CAT_VALUES = 11
+MAX_SLOTS = 17
+MAX_SLOTS_OTHER_SERVICE = 40
+MAX_VALUES_PER_SERVICE = 23
+NUM_BIN_FEATS = 6

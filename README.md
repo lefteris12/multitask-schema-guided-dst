@@ -1,6 +1,8 @@
 # Description
 
-This repo contains the source code for the INTERSPEECH 2022 paper "A Multi-Task BERT Model for Schema-Guided Dialogue State Tracking".
+This repo contains the source code for the INTERSPEECH 2022 paper ["A Multi-Task BERT Model for Schema-Guided Dialogue State Tracking"](https://arxiv.org/abs/2207.00828).
+
+![](model.png)
 
 # Abstract
 
@@ -24,6 +26,10 @@ pip install -r requirements.txt
 
 Using a virtual environment is recommended.
 
+# Configuration
+
+Training can be configured by modifying the file `mtsgdst/config.py`.
+
 # Create datasets
 
 Download the SGD dataset:
@@ -32,14 +38,13 @@ git clone https://github.com/google-research-datasets/dstc8-schema-guided-dialog
 ```
 
 Create and save the datasets to pickles.
-The `eval` flag controls whether the dataset uses the ground-truth previous dialogue states.
-For all possible flags see [all_slots_dataset.py](https://github.com/lefteris12/multitask-schema-guided-dst/blob/main/exp/all_slots_dataset.py).
+The `eval_mode` flag controls whether the dataset uses the ground-truth previous dialogue states and the `augment` flag controls whether data augmentation (schema augmentation and word dropout) is applied.
 
 ```
-python -m exp.all_slots_dataset --dataset_split=train --task_name=all --schema_augment_prob=0.1 --word_dropout=0.1
-python -m exp.all_slots_dataset --dataset_split=dev --task_name=all --schema_augment_prob=0 --word_dropout=0
-python -m exp.all_slots_dataset --dataset_split=dev --task_name=all --schema_augment_prob=0 --word_dropout=0 --eval=1
-python -m exp.all_slots_dataset --dataset_split=test --task_name=all --schema_augment_prob=0 --word_dropout=0 --eval=1
+python -m mtsgdst.data.pytorch_dataset --dataset_split=train --augment
+python -m mtsgdst.data.pytorch_dataset --dataset_split=dev
+python -m mtsgdst.data.pytorch_dataset --dataset_split=dev --eval_mode
+python -m mtsgdst.data.pytorch_dataset --dataset_split=test --eval_mode
 ```
 
 # Training
@@ -47,7 +52,7 @@ python -m exp.all_slots_dataset --dataset_split=test --task_name=all --schema_au
 Train the model for a total of 5 epochs and evaluate every 4k steps on the dev set:
 
 ```
-python -m exp.train --num_epochs=5 --num_total_epochs=5 --batch_size=16 --dropout=0.3 --num_steps_logging=4000
+python -m mtsgdst.train --num_epochs=5 --num_total_epochs=5 --num_steps_logging=4000
 ```
 
 After every evaluation on the dev set, `checkpoints/latest.pt` is the latest checkpoint and `checkpoints/best.pt` is the best checkpoint so far.
@@ -56,13 +61,13 @@ It is possible to continue training from checkpoints.
 For example:
 
 ```
-python -m exp.train --num_epochs=2 --num_total_epochs=5 --batch_size=16 --dropout=0.3 --num_steps_logging=4000
-python -m exp.train --num_epochs=5 --num_total_epochs=5 --batch_size=16 --dropout=0.3 --num_steps_logging=4000 --load_checkpoint_path='checkpoints/latest.pt'
+python -m mtsgdst.train --num_epochs=2 --num_total_epochs=5 --num_steps_logging=4000
+python -m mtsgdst.train --num_epochs=5 --num_total_epochs=5 --num_steps_logging=4000 --load_checkpoint_path='checkpoints/latest.pt'
 ```
 
 # Evaluation on the test set
 
 Evaluate on the test set using the [scripts](https://github.com/google-research/google-research/tree/master/schema_guided_dst) provided by the SGD-baseline:
 ```
-python -m exp.dst --checkpoint_path='checkpoints/best.pt'
+python -m mtsgdst.dst --checkpoint_path='checkpoints/best.pt'
 ```
