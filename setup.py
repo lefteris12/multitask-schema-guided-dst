@@ -17,7 +17,7 @@ setup(
    version='1.0',
    author='Lefteris Kapelonis',
    author_email='lkapelonis@gmail.com',
-   packages=['mtsgdst'],
+   packages=['mtsgdst', 'mtsgdst.data'],
    package_data={'mtsgdst': extra_files},
    install_requires=[
     'absl-py>=0.7.0',
