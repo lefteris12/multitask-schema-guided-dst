@@ -20,11 +20,11 @@ examine the contributing factors to the success of our model.
 
 # Dependencies
 
+Create a virtual environment (the code has been tested in Python 3.10) and install the dependencies:
+
 ```
 pip install -r requirements.txt
 ```
-
-Using a virtual environment is recommended.
 
 # Configuration
 
