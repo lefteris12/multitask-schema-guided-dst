@@ -73,3 +73,18 @@ Evaluate on the test set using the [scripts](https://github.com/google-research/
 ```
 python -m mtsgdst.dst --checkpoint_path='checkpoints/best.pt'
 ```
+
+# Citation
+
+Cite as: Kapelonis, E., Georgiou, E., Potamianos, A. (2022) A Multi-Task BERT Model for Schema-Guided Dialogue State Tracking. Proc. Interspeech 2022, 2733-2737, doi: 10.21437/Interspeech.2022-10852
+
+```
+@inproceedings{kapelonis22_interspeech,
+  author={Eleftherios Kapelonis and Efthymios Georgiou and Alexandros Potamianos},
+  title={{A Multi-Task BERT Model for Schema-Guided Dialogue State Tracking}},
+  year=2022,
+  booktitle={Proc. Interspeech 2022},
+  pages={2733--2737},
+  doi={10.21437/Interspeech.2022-10852}
+}
+```
