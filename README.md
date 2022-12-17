@@ -49,7 +49,7 @@ python -m mtsgdst.data.pytorch_dataset --dataset_split=test --eval_mode
 
 # Training
 
-*You can find a trained model checkpoint [here](https://huggingface.co/lefteris12/multitask-schema-guided-dst).*
+*You can find a trained model checkpoint and the full result metrics [here](https://huggingface.co/lefteris12/multitask-schema-guided-dst).*
 
 Train the model for a total of 5 epochs and evaluate every 4k steps on the dev set:
 
