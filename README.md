@@ -1,6 +1,7 @@
 # Description
 
 This repo contains the source code for the INTERSPEECH 2022 paper ["A Multi-Task BERT Model for Schema-Guided Dialogue State Tracking"](https://arxiv.org/abs/2207.00828).
+This was part of the work for my NTUA thesis affiliated with the SLP-NTUA lab, which you can find [here](http://artemis.cslab.ece.ntua.gr:8080/jspui/handle/123456789/18337).
 
 ![](model.png)
 
